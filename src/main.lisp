@@ -16,20 +16,7 @@
      #'str:emptyp
      (str:split #\/ imdb-link)))))
 
-(defparameter *id-lists*
-  (let ((wl (subseq *watch-list* 1 10)))
-    (loop for (title year imdb-link) in wl
-          collect (get-imdb-id imdb-link))))
-
-(defparameter *milk*
-  (jonathan:parse
-   (dex:get
-    (str:concat
-     *omdb-request-root*
-     "&i="
-     (car *id-lists*))) :as :alist))
-
-(defun connect ()
+(defun connect-db ()
   (mito:connect-toplevel
    :sqlite3
    :database-name "ptp-bookmarks-ui.db"))
@@ -43,8 +30,6 @@
    (genre :col-type :text)
    (year :col-type :text)
    (title :col-type :text)))
-
-(mito:table-definition 'movie)
 
 (defun ensure-movies ()
   (mito:ensure-table-exists 'movie)
@@ -62,8 +47,34 @@
    :year (assoc-val movie-alist "Year")
    :title (assoc-val movie-alist "Title")))
 
-(defvar milk-movie (create-movie-item *milk*))
-
-(mito:insert-dao milk-movie)
-(mito:find-dao 'movie :imdbid (assoc-val *milk* "imdbID"))
-(mito:select-dao 'movie)
+(defun populate-db (csv-file-path)
+  (let ((csv (cl-csv:read-csv csv-file-path)))
+    (connect-db)
+    (loop for (title year imdb-link) in (rest csv)
+          do (format
+              t
+              "Checking if ID ~a from ~a (~a) is already in the db ~%"
+              (get-imdb-id imdb-link) title year)
+          do (let ((imdb-id (get-imdb-id imdb-link)))
+               (if (and imdb-id (not (mito:find-dao 'movie :imdbid imdb-id)))
+                   (progn
+                     (format t "Fetching ~a (~a) from omdb ~%" title year)
+                     (let ((movie-alist
+                             (jonathan:parse
+                              (dex:get
+                               (str:concat
+                                *omdb-request-root*
+                                "&i="
+                                imdb-id)) :as :alist)))
+                       (format t "Inserting ~a (~a) into the db ~%" title year)
+                       (mito:insert-dao (create-movie-item movie-alist))
+                       (format
+                        t
+                        "Inserted ~a (~a) into the db successfully ~%"
+                        title
+                        year)))
+                   (format
+                    t
+                    "Movie ~a (~a) is already in the db ~%"
+                    title
+                    year))))))
