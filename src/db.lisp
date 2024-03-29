@@ -21,15 +21,16 @@
    :sqlite3
    :database-name "ptp-bookmarks-ui.db"))
 
-(mito:deftable movie ()
-  ((imdbid :col-type :text)
-   (imdbrating :col-type :text)
-   (poster :col-type :text)
-   (plot :col-type :text)
-   (actors :col-type :text)
-   (genre :col-type :text)
-   (year :col-type :text)
-   (title :col-type :text)))
+(defun create-movie-table ()
+  (mito:deftable movie ()
+    ((imdbid :col-type :text)
+     (imdbrating :col-type :text)
+     (poster :col-type :text)
+     (plot :col-type :text)
+     (actors :col-type :text)
+     (genre :col-type :text)
+     (year :col-type :text)
+     (title :col-type :text))))
 
 (defun ensure-movies ()
   (mito:ensure-table-exists 'movie)
@@ -47,7 +48,7 @@
    :year (assoc-val movie-alist "Year")
    :title (assoc-val movie-alist "Title")))
 
-(defun populate-db (csv-file-path)
+(defun populate-db-from-csv (csv-file-path)
   (let ((csv (cl-csv:read-csv csv-file-path)))
     (connect-db)
     (loop for (title year imdb-link) in (rest csv)
@@ -78,3 +79,18 @@
                     "Movie ~a (~a) is already in the db ~%"
                     title
                     year))))))
+
+(defun list-all-movies-as-plist ()
+  (connect-db)
+  (let ((db-list (mito:select-dao 'movie)))
+    (loop for db-item in db-list
+          collect (with-slots
+                        (title year imdbrating poster plot actors genre)
+                      db-item
+                    `(:title ,title
+                      :year ,year
+                      :rating ,imdbrating
+                      :poster ,poster
+                      :synopsis ,plot
+                      :actors ,actors
+                      :genre ,genre)))))
