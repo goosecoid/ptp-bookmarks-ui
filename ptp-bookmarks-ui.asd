@@ -11,6 +11,6 @@
   :components ((:module "src"
                 :components
                 ((:file "package")
-                 (:file "main"))))
+                 (:file "db"))))
 
   :description "")
