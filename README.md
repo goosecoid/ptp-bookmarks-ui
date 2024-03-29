@@ -1,6 +1,6 @@
 # Ptp-Bookmarks-Ui
 
-A local rich bookmarks browser powered by sqlite and htmx
+A local rich PassThePopcorn.me bookmarks browser powered by sqlite and htmx
 
 ## Usage
 
