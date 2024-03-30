@@ -7,7 +7,12 @@
                "str"
                "jonathan"
                "mito"
-               "alexandria")
+               "alexandria"
+               "lquery"
+               "spinneret"
+               "clack"
+               "ningle"
+               "lack")
   :components ((:module "src"
                 :components
                 ((:file "package")

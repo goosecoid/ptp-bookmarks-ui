@@ -52,6 +52,7 @@
   (let ((csv (cl-csv:read-csv csv-file-path)))
     (connect-db)
     (loop for (title year imdb-link) in (rest csv)
+          ;; TODO: FIXME calculate imdb id here
           do (format
               t
               "Checking if ID ~a from ~a (~a) is already in the db ~%"
@@ -85,9 +86,10 @@
   (let ((db-list (mito:select-dao 'movie)))
     (loop for db-item in db-list
           collect (with-slots
-                        (title year imdbrating poster plot actors genre)
+                        (title year imdbrating poster plot actors genre imdbid)
                       db-item
                     `(:title ,title
+                      :imdbid ,imdbid,
                       :year ,year
                       :rating ,imdbrating
                       :poster ,poster
