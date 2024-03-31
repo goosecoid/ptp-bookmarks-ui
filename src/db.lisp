@@ -16,25 +16,22 @@
      #'str:emptyp
      (str:split #\/ imdb-link)))))
 
-(defun connect-db ()
-  (mito:connect-toplevel
-   :sqlite3
-   :database-name "ptp-bookmarks-ui.db"))
+(mito:connect-toplevel
+ :sqlite3
+ :database-name "ptp-bookmarks-ui.db")
 
-(defun create-movie-table ()
-  (mito:deftable movie ()
-    ((imdbid :col-type :text)
-     (imdbrating :col-type :text)
-     (poster :col-type :text)
-     (plot :col-type :text)
-     (actors :col-type :text)
-     (genre :col-type :text)
-     (year :col-type :text)
-     (title :col-type :text))))
+(mito:deftable movie ()
+  ((imdbid :col-type :text)
+   (imdbrating :col-type :text)
+   (poster :col-type :text)
+   (plot :col-type :text)
+   (actors :col-type :text)
+   (genre :col-type :text)
+   (year :col-type :text)
+   (title :col-type :text)))
 
-(defun ensure-movies ()
-  (mito:ensure-table-exists 'movie)
-  (mito:migrate-table 'movie))
+(mito:ensure-table-exists 'movie)
+(mito:migrate-table 'movie)
 
 (defun create-movie-item (movie-alist)
   (make-instance
@@ -82,7 +79,6 @@
                     year))))))
 
 (defun list-all-movies-as-plist ()
-  (connect-db)
   (let ((db-list (mito:select-dao 'movie)))
     (loop for db-item in db-list
           collect (with-slots

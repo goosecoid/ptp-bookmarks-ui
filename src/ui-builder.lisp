@@ -12,14 +12,16 @@
      (:doctype)
      (:html
       (:head
-       (:style "#trailers { display: flex;
-                            flex-flow: row nowrap;
-                            align-items: stretch;
-                            height: 100%;
-                            width: 100%; }
+       (:style "#trailer-button { display: flex;
+                                  flex-flow: row nowrap;
+                                  justify-content: space-between;
+                                  align-items: center;
+                                  gap: 10px; }
                 #trailer-urls { display: flex;
                                 flex-flow: column wrap;
-                                justify-content: center; }")
+                                justify-content: center; }
+                .pure-table { margin: 1% }
+                #title { text-align: center  }")
        (:link
         :rel "stylesheet"
         :href "https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css")
@@ -27,9 +29,9 @@
        (:title ,title))
       (:body ,@body))))
 
-(defun table-body ()
+(defun table-body (movies-plist)
   (spinneret:with-html-string ()
-    (loop for movie in *movies-plist*
+    (loop for movie in movies-plist
           for counter from 1 do
             (:tr :class (if (oddp counter)
                             "pure-table-odd"
@@ -41,24 +43,27 @@
                  (:td (getf movie :actors))
                  (:td (getf movie :synopsis))
                  (:td (getf movie :rating))
-                 (:td  (:div :id "trailers"
-                             (:button
-                              :class "pure-button"
-                              :data-hx-get
-                              (format
-                               nil
-                               "/trailers?imdbid=~A"
-                               (getf movie :imdbid))
-                              "Get trailers"
-                              (:img
-                               :id "spinner"
-                               :class "htmx-indicator"
-                               :src *svg-url*))))))))
+                 (:td
+                  (:div
+                   :id "trailer-button"
+                   :class "pure-button"
+                   :data-hx-trigger "click"
+                   :data-hx-swap "outerHTML"
+                   :data-hx-get
+                   (format
+                    nil
+                    "/trailers?imdbid=~A"
+                    (getf movie :imdbid))
+                   (:span "Get trailers")
+                   (:img
+                    :id "spinner"
+                    :class "htmx-indicator"
+                    :src *svg-url*)))))))
 
 (defun movie-list (movies-plist)
   (with-page (:title "My PTP watch list")
     (:header
-     (:h1 "My PTP watch list"))
+     (:h1 :id "title" "My PTP watch list"))
     (:table :class "pure-table"
             (:thead
              (:tr
@@ -70,7 +75,7 @@
               (:th "Synopsis")
               (:th "Rating")
               (:th "Trailers")))
-            (:tbody (:raw (table-body))))))
+            (:tbody (:raw (table-body movies-plist))))))
 
 (defun get-trailer-links-el (imdbid)
   (let ((trailer-urls (get-trailer-links imdbid)))
