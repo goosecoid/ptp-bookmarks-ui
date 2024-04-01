@@ -1,5 +1,6 @@
 (in-package :ptp-bookmarks-ui)
 
+;; TODO: FIXME env var
 (defparameter *omdb-api-key* "2f4be310")
 (defparameter *omdb-request-root*
   (str:concat "http://www.omdbapi.com/?apikey=" *omdb-api-key*))
