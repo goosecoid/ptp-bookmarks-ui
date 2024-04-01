@@ -44,6 +44,8 @@
                  (:td (getf movie :synopsis))
                  (:td (getf movie :rating))
                  (:td
+                  ;; TODO: FIXME in the future whe should check if the movie has trailer urls
+                  ;; if so, already render them, otherwise, render the fetch button
                   (:div
                    :id "trailer-button"
                    :class "pure-button"

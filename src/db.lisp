@@ -16,6 +16,9 @@
      #'str:emptyp
      (str:split #\/ imdb-link)))))
 
+;;TODO: FIXME Probably should create a single bootstrap function for the DB
+;;That will create the tables, migrations and init a re-usable connection
+
 (mito:connect-toplevel
  :sqlite3
  :database-name "ptp-bookmarks-ui.db")
