@@ -64,6 +64,8 @@
                (if (and imdb-id (not (mito:find-dao 'movie :imdbid imdb-id)))
                    (progn
                      (format t "Fetching ~a (~a) from omdb ~%" title year)
+                     ;; TODO: FIXME move the omdb fetch into its own function
+                     ;; and move to other file
                      (let ((movie-alist
                              (jonathan:parse
                               (dex:get
