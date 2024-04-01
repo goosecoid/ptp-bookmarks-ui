@@ -37,6 +37,9 @@
 (mito:ensure-table-exists 'movie)
 (mito:migrate-table 'movie)
 
+;; TODO: FIXME make it a accepts on or more alists
+;; and use loop macro with destructuring and skip
+;; for enhanced brevity
 (defun create-movie-item (movie-alist)
   (make-instance
    'movie
