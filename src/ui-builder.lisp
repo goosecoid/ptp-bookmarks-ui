@@ -46,6 +46,7 @@
                  (:td
                   ;; TODO: FIXME in the future whe should check if the movie has trailer urls
                   ;; if so, already render them, otherwise, render the fetch button
+                  ;; TODO: FIXME button kinda looks weird
                   (:div
                    :id "trailer-button"
                    :class "pure-button"
