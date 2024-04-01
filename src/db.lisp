@@ -51,7 +51,6 @@
 
 (defun populate-db-from-csv (csv-file-path)
   (let ((csv (cl-csv:read-csv csv-file-path)))
-    (connect-db)
     (loop for (title year imdb-link) in (rest csv)
           ;; TODO: FIXME calculate imdb id here
           do (format
