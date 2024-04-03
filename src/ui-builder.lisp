@@ -7,6 +7,24 @@
 ;; (defparameter *server* (clack:clackup *app* :port 8080))
 ;; (clack:stop *server*)
 
+(defun extract-genres (movies-plist)
+  (sort
+   (remove-duplicates
+    (loop for movie in movies-plist
+          for genres = (str:split "," (getf movie :genre))
+          nconc (loop for genre in genres
+                      collect (str:trim genre)))
+    :test #'equal)
+   #'string-lessp))
+
+(defun filter-movies (lst &key (genre nil))
+  (when genre
+    (let ((genre-lst
+            (remove-if-not
+             (lambda (movie) (str:containsp genre (getf movie :genre)))
+             lst)))
+      genre-lst)))
+
 (defmacro with-page ((&key title) &body body)
   `(spinneret:with-html-string
      (:doctype)
@@ -20,7 +38,12 @@
                 #trailer-urls { display: flex;
                                 flex-flow: column wrap;
                                 justify-content: center; }
-                .pure-table { margin: 1% }
+                .container { margin: 1% }
+                .dropdown { display: flex;
+                            flex-flow: row nowrap;
+                            justify-content: flex-start;
+                            align-items: center;
+                            gap: 10px; }
                 #title { text-align: center  }")
        (:link
         :rel "stylesheet"
@@ -67,18 +90,22 @@
   (with-page (:title "My PTP watch list")
     (:header
      (:h1 :id "title" "My PTP watch list"))
-    (:table :class "pure-table"
-            (:thead
-             (:tr
-              (:th "Title")
-              (:th "Cover")
-              (:th "Year")
-              (:th "Genre")
-              (:th "Actors")
-              (:th "Synopsis")
-              (:th "Rating")
-              (:th "Trailers")))
-            (:tbody (:raw (table-body movies-plist))))))
+    (:div :class "container"
+          (:div (:raw (genre-dropdown-filter
+                       (extract-genres movies-plist))))
+          (:table :class "pure-table"
+                  (:thead
+                   (:tr
+                    (:th "Title")
+                    (:th "Cover")
+                    (:th "Year")
+                    (:th "Genre")
+                    (:th "Actors")
+                    (:th "Synopsis")
+                    (:th "Rating")
+                    (:th "Trailers")))
+                  (:tbody :id "table-body"
+                          (:raw (table-body movies-plist)))))))
 
 (defun get-trailer-links-el (imdbid)
   (let ((trailer-urls (get-trailer-links imdbid)))
@@ -86,11 +113,36 @@
       (loop for (url description) in trailer-urls
             do (:a :target "_blank" :href url description)))))
 
+(defun genre-dropdown-filter (genres)
+  (spinneret:with-html-string ()
+    (:div :class "dropdown"
+          (:p "Filter by genre: ")
+          (:form :class "pure-form"
+                 (:select
+                     (loop for genre in genres
+                           do (:option
+                               :data-hx-get
+                               (format nil "/filter?genre=~A" genre)
+                               :data-hx-target "#table-body"
+                               ;; :data-hx-swap "outerHTML"
+                               genre)))))))
+
 (setf (ningle:route *app* "/")
       (movie-list *movies-plist*))
+
+(setf (ningle:route *app* "/filter")
+      #'(lambda (params)
+          (let ((movielst
+                  (filter-movies
+                   *movies-plist*
+                   :genre (cdar params))))
+            (spinneret:with-html-string ()
+              (:raw (table-body movielst))))))
 
 (setf (ningle:route *app* "/trailers")
       #'(lambda (params)
           (spinneret:with-html-string ()
             (:div :id "trailer-urls"
                   (:raw (get-trailer-links-el (cdar params)))))))
+
+
