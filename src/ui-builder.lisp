@@ -86,6 +86,27 @@
                     :class "htmx-indicator"
                     :src *svg-url*)))))))
 
+
+
+(defun get-trailer-links-el (imdbid)
+  (let ((trailer-urls (get-trailer-links imdbid)))
+    (spinneret:with-html-string ()
+      (loop for (url description) in trailer-urls
+            do (:a :target "_blank" :href url description)))))
+
+(defun genre-dropdown-filter (genres)
+  (spinneret:with-html-string ()
+    (:div :class "dropdown"
+          (:p "Filter by genre: ")
+          (:form :class "pure-form"
+                 (:select
+                     (loop for genre in genres
+                           do (:option
+                               :data-hx-get
+                               (format nil "/filter?genre=~A" genre)
+                               :data-hx-target "#table-body"
+                               genre)))))))
+
 (defun movie-list (movies-plist)
   (with-page (:title "My PTP watch list")
     (:header
@@ -107,26 +128,6 @@
                   (:tbody :id "table-body"
                           (:raw (table-body movies-plist)))))))
 
-(defun get-trailer-links-el (imdbid)
-  (let ((trailer-urls (get-trailer-links imdbid)))
-    (spinneret:with-html-string ()
-      (loop for (url description) in trailer-urls
-            do (:a :target "_blank" :href url description)))))
-
-(defun genre-dropdown-filter (genres)
-  (spinneret:with-html-string ()
-    (:div :class "dropdown"
-          (:p "Filter by genre: ")
-          (:form :class "pure-form"
-                 (:select
-                     (loop for genre in genres
-                           do (:option
-                               :data-hx-get
-                               (format nil "/filter?genre=~A" genre)
-                               :data-hx-target "#table-body"
-                               ;; :data-hx-swap "outerHTML"
-                               genre)))))))
-
 (setf (ningle:route *app* "/")
       (movie-list *movies-plist*))
 
@@ -144,5 +145,3 @@
           (spinneret:with-html-string ()
             (:div :id "trailer-urls"
                   (:raw (get-trailer-links-el (cdar params)))))))
-
-

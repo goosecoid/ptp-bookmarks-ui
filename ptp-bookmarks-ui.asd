@@ -16,6 +16,8 @@
   :components ((:module "src"
                 :components
                 ((:file "package")
-                 (:file "db"))))
+                 (:file "db")
+                 (:file "ui-builder")
+                 (:file "omdb"))))
 
   :description "")

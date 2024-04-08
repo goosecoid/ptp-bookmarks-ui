@@ -55,36 +55,28 @@
 (defun populate-db-from-csv (csv-file-path)
   (let ((csv (cl-csv:read-csv csv-file-path)))
     (loop for (title year imdb-link) in (rest csv)
-          ;; TODO: FIXME calculate imdb id here
+          for imdb-id = (get-imdb-id imdb-link)
           do (format
               t
               "Checking if ID ~a from ~a (~a) is already in the db ~%"
-              (get-imdb-id imdb-link) title year)
-          do (let ((imdb-id (get-imdb-id imdb-link)))
-               (if (and imdb-id (not (mito:find-dao 'movie :imdbid imdb-id)))
-                   (progn
-                     (format t "Fetching ~a (~a) from omdb ~%" title year)
-                     ;; TODO: FIXME move the omdb fetch into its own function
-                     ;; and move to other file
-                     (let ((movie-alist
-                             (jonathan:parse
-                              (dex:get
-                               (str:concat
-                                *omdb-request-root*
-                                "&i="
-                                imdb-id)) :as :alist)))
-                       (format t "Inserting ~a (~a) into the db ~%" title year)
-                       (mito:insert-dao (create-movie-item movie-alist))
-                       (format
-                        t
-                        "Inserted ~a (~a) into the db successfully ~%"
-                        title
-                        year)))
-                   (format
-                    t
-                    "Movie ~a (~a) is already in the db ~%"
-                    title
-                    year))))))
+              imdb-id title year)
+          do (if (and imdb-id (not (mito:find-dao 'movie :imdbid imdb-id)))
+                 (progn
+                   (format t "Fetching ~a (~a) from omdb ~%" title year)
+                   (let ((movie-alist
+                           (get-movie-alist imdb-id)))
+                     (format t "Inserting ~a (~a) into the db ~%" title year)
+                     (mito:insert-dao (create-movie-item movie-alist))
+                     (format
+                      t
+                      "Inserted ~a (~a) into the db successfully ~%"
+                      title
+                      year)))
+                 (format
+                  t
+                  "Movie ~a (~a) is already in the db ~%"
+                  title
+                  year)))))
 
 (defun list-all-movies-as-plist ()
   (let ((db-list (mito:select-dao 'movie)))
