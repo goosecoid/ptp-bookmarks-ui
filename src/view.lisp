@@ -1,12 +1,5 @@
 (in-package :ptp-bookmarks-ui)
 
-;; (defparameter *svg-url*
-;;   "https://raw.githubusercontent.com/n3r4zzurr0/svg-spinners/abfa05c49acf005b8b1e0ef8eb25a67a7057eb20/svg-css/6-dots-rotate.svg")
-;; (defparameter *movies-plist* (list-all-movies-as-plist))
-;; (defparameter *app* (make-instance 'ningle:app))
-;; (defparameter *server* (clack:clackup *app* :port 8080))
-;; (clack:stop *server*)
-
 (defun extract-genres (movies-plist)
   (sort
    (remove-duplicates
@@ -67,9 +60,9 @@
                  (:td (getf movie :synopsis))
                  (:td (getf movie :rating))
                  (:td
-                  ;; TODO: FIXME in the future whe should check if the movie has trailer urls
+                  ;; TODO: in the future whe should check if the movie has trailer urls
                   ;; if so, already render them, otherwise, render the fetch button
-                  ;; TODO: FIXME button kinda looks weird
+                  ;; TODO: button kinda looks weird
                   (:div
                    :id "trailer-button"
                    :class "pure-button"
@@ -100,12 +93,13 @@
           (:p "Filter by genre: ")
           (:form :class "pure-form"
                  (:select
-                     (loop for genre in genres
-                           do (:option
-                               :data-hx-get
-                               (format nil "/filter?genre=~A" genre)
-                               :data-hx-target "#table-body"
-                               genre)))))))
+                     :name "genre"
+                   :data-hx-get
+                   "/filter-genre"
+                   :data-hx-trigger "change"
+                   :data-hx-target "#table-body"
+                   (loop for genre in genres
+                         do (:option :id "genre" :value genre genre)))))))
 
 (defun movie-list (movies-plist)
   (with-page (:title "My PTP watch list")
@@ -127,21 +121,3 @@
                     (:th "Trailers")))
                   (:tbody :id "table-body"
                           (:raw (table-body movies-plist)))))))
-
-(setf (ningle:route *app* "/")
-      (movie-list *movies-plist*))
-
-(setf (ningle:route *app* "/filter")
-      #'(lambda (params)
-          (let ((movielst
-                  (filter-movies
-                   *movies-plist*
-                   :genre (cdar params))))
-            (spinneret:with-html-string ()
-              (:raw (table-body movielst))))))
-
-(setf (ningle:route *app* "/trailers")
-      #'(lambda (params)
-          (spinneret:with-html-string ()
-            (:div :id "trailer-urls"
-                  (:raw (get-trailer-links-el (cdar params)))))))

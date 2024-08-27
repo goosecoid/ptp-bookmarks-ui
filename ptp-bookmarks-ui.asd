@@ -17,7 +17,9 @@
                 :components
                 ((:file "package")
                  (:file "db")
-                 (:file "ui-builder")
+                 (:file "view")
+                 (:file "server")
+                 (:file "imdb")
                  (:file "omdb"))))
 
   :description "")

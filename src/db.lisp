@@ -17,40 +17,46 @@
      #'str:emptyp
      (str:split #\/ imdb-link)))))
 
-;;TODO: FIXME Probably should create a single bootstrap function for the DB
+;;TODO: FIXME Should create a single bootstrap function for the DB
 ;;That will create the tables, migrations and init a re-usable connection
 
-(mito:connect-toplevel
- :sqlite3
- :database-name "ptp-bookmarks-ui.db")
+(defun bootstrap-db ()
 
-(mito:deftable movie ()
-  ((imdbid :col-type :text)
-   (imdbrating :col-type :text)
-   (poster :col-type :text)
-   (plot :col-type :text)
-   (actors :col-type :text)
-   (genre :col-type :text)
-   (year :col-type :text)
-   (title :col-type :text)))
+  (mito:connect-toplevel
+   :sqlite3
+   :database-name "ptp-bookmarks-ui.db")
 
-(mito:ensure-table-exists 'movie)
-(mito:migrate-table 'movie)
+  (mito:deftable movie ()
+    ((imdbid :col-type :text)
+     (imdbrating :col-type :text)
+     (poster :col-type :text)
+     (plot :col-type :text)
+     (actors :col-type :text)
+     (genre :col-type :text)
+     (year :col-type :text)
+     (title :col-type :text)))
 
-;; TODO: FIXME make it accept on or more alists
-;; and use loop macro with destructuring and skip
-;; for enhanced brevity
-(defun create-movie-item (movie-alist)
-  (make-instance
-   'movie
-   :imdbid (assoc-val movie-alist "imdbID")
-   :imdbrating (assoc-val movie-alist "imdbRating")
-   :poster (assoc-val movie-alist "Poster")
-   :plot (assoc-val movie-alist "Plot")
-   :actors (assoc-val movie-alist "Actors")
-   :genre (assoc-val movie-alist "Genre")
-   :year (assoc-val movie-alist "Year")
-   :title (assoc-val movie-alist "Title")))
+  (mito:ensure-table-exists 'movie)
+  (mito:migrate-table 'movie)
+
+  ;; TODO: make it accept on or more alists
+  ;; and use loop macro with destructuring and skip
+  ;; for enhanced brevity
+  (defun create-movie-item (movie-alist)
+    (make-instance
+     'movie
+     :imdbid (assoc-val movie-alist "imdbID")
+     :imdbrating (assoc-val movie-alist "imdbRating")
+     :poster (assoc-val movie-alist "Poster")
+     :plot (assoc-val movie-alist "Plot")
+     :actors (assoc-val movie-alist "Actors")
+     :genre (assoc-val movie-alist "Genre")
+     :year (assoc-val movie-alist "Year")
+     :title (assoc-val movie-alist "Title")))
+
+  (populate-db-from-csv #P"~/Downloads/watch-list.csv")
+  )
+
 
 (defun populate-db-from-csv (csv-file-path)
   (let ((csv (cl-csv:read-csv csv-file-path)))
