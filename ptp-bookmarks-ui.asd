@@ -16,10 +16,11 @@
   :components ((:module "src"
                 :components
                 ((:file "package")
+                 (:file "omdb")
                  (:file "db")
                  (:file "view")
                  (:file "server")
                  (:file "imdb")
-                 (:file "omdb"))))
+                 )))
 
   :description "")

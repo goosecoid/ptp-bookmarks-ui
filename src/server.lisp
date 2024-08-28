@@ -15,7 +15,6 @@
 
   (setf (ningle:route app-instance "/filter-genre")
         #'(lambda (params)
-            (format t "params: ~a~%" (cdar params))
             (let ((movielst
                     (filter-movies
                      *movies-plist*

@@ -4,8 +4,7 @@
 (defparameter *omdb-api-key* "2f4be310")
 (defparameter *omdb-request-root*
   (str:concat "http://www.omdbapi.com/?apikey=" *omdb-api-key*))
-(defparameter *watch-list*
-  (cl-csv:read-csv #P"~/Downloads/watch-list.csv"))
+(defparameter *watch-list-path* #P"~/Downloads/bookmarks.csv")
 
 (defun assoc-val (alist key)
   (alexandria:assoc-value alist key :test #'equal))
@@ -38,25 +37,22 @@
 
   (mito:ensure-table-exists 'movie)
   (mito:migrate-table 'movie)
+  (populate-db-from-csv *watch-list-path*))
 
-  ;; TODO: make it accept on or more alists
-  ;; and use loop macro with destructuring and skip
-  ;; for enhanced brevity
-  (defun create-movie-item (movie-alist)
-    (make-instance
-     'movie
-     :imdbid (assoc-val movie-alist "imdbID")
-     :imdbrating (assoc-val movie-alist "imdbRating")
-     :poster (assoc-val movie-alist "Poster")
-     :plot (assoc-val movie-alist "Plot")
-     :actors (assoc-val movie-alist "Actors")
-     :genre (assoc-val movie-alist "Genre")
-     :year (assoc-val movie-alist "Year")
-     :title (assoc-val movie-alist "Title")))
-
-  (populate-db-from-csv #P"~/Downloads/watch-list.csv")
-  )
-
+;; TODO: make it accept on or more alists
+;; and use loop macro with destructuring and skip
+;; for enhanced brevity
+(defun create-movie-item (movie-alist)
+  (make-instance
+   'movie
+   :imdbid (assoc-val movie-alist "imdbID")
+   :imdbrating (assoc-val movie-alist "imdbRating")
+   :poster (assoc-val movie-alist "Poster")
+   :plot (assoc-val movie-alist "Plot")
+   :actors (assoc-val movie-alist "Actors")
+   :genre (assoc-val movie-alist "Genre")
+   :year (assoc-val movie-alist "Year")
+   :title (assoc-val movie-alist "Title")))
 
 (defun populate-db-from-csv (csv-file-path)
   (let ((csv (cl-csv:read-csv csv-file-path)))
