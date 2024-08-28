@@ -1,2 +1,3 @@
 (defpackage ptp-bookmarks-ui
-  (:use :cl))
+  (:use :cl)
+  (:export #:main))

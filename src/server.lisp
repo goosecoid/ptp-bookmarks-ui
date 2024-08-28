@@ -27,4 +27,16 @@
 (defun main ()
   (bootstrap-db)
   (bootstrap-routes *app*)
-  (clack:clackup *app* :port 8080))
+  (let ((server (clack:clackup *app* :port 8080)))
+
+    (handler-case (bt:join-thread (find-if (lambda (th)
+                                             (search "hunchentoot" (bt:thread-name th)))
+                                           (bt:all-threads))))
+
+    ;; Catch a C-c
+    (#+sbcl sb-sys:interactive-interrupt
+     () (progn
+          (format *error-output* "Aborting server...~&")
+          (clack:stop server)
+          (uiop:quit)))
+    (error (c) (format t "Unknown error: ~&~a~&" c))))

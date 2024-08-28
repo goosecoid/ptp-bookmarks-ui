@@ -12,6 +12,7 @@
                "spinneret"
                "clack"
                "ningle"
+               "bordeaux-threads"
                "lack")
   :components ((:module "src"
                 :components
@@ -23,4 +24,7 @@
                  (:file "imdb")
                  )))
 
-  :description "")
+  :description ""
+  :build-operation "program-op"
+  :build-pathname "ptp"
+  :entry-point "ptp-bookmarks-ui:main")
