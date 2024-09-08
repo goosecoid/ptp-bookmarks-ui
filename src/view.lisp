@@ -20,7 +20,7 @@
 
 (defmacro with-page ((&key title) &body body)
   `(spinneret:with-html-string
-     (:doctype)
+       (:doctype)
      (:html
       (:head
        (:style "#trailer-button { display: flex;
@@ -40,8 +40,8 @@
                 #title { text-align: center  }")
        (:link
         :rel "stylesheet"
-        :href "https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css")
-       (:script :src "https://unpkg.com/htmx.org@1.9.10")
+        :href "public/pure-min.css")
+       (:script :src "public/htmx.min.js")
        (:title ,title))
       (:body ,@body))))
 
@@ -77,7 +77,7 @@
                    (:img
                     :id "spinner"
                     :class "htmx-indicator"
-                    :src *svg-url*)))))))
+                    :src "public/spinner.svg")))))))
 
 
 
@@ -93,13 +93,13 @@
           (:p "Filter by genre: ")
           (:form :class "pure-form"
                  (:select
-                     :name "genre"
-                   :data-hx-get
-                   "/filter-genre"
-                   :data-hx-trigger "change"
-                   :data-hx-target "#table-body"
-                   (loop for genre in genres
-                         do (:option :id "genre" :value genre genre)))))))
+                  :name "genre"
+                  :data-hx-get
+                  "/filter-genre"
+                  :data-hx-trigger "change"
+                  :data-hx-target "#table-body"
+                  (loop for genre in genres
+                        do (:option :id "genre" :value genre genre)))))))
 
 (defun movie-list (movies-plist)
   (with-page (:title "My PTP watch list")

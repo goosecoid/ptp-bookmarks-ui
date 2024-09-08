@@ -22,9 +22,8 @@
                  (:file "view")
                  (:file "server")
                  (:file "imdb")
-                 )))
-
+                 (:file "cli"))))
   :description ""
   :build-operation "program-op"
   :build-pathname "ptp"
-  :entry-point "ptp-bookmarks-ui:main")
+  :entry-point "ptp-bookmarks-ui:start")
