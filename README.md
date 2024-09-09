@@ -1,22 +1,33 @@
-# Ptp-Bookmarks-Ui
+# PassThePopcorn Bookmarks UI
 
-A local rich PassThePopcorn bookmarks browser powered by sqlite and htmx
+A PassThePopcorn bookmarks browser powered by sqlite and htmx
 
-## Usage
+## Install
 
-Load using quicklisp
+### Prerequisite
 
-``` common-lisp
-(ql:quicklisp 'ptp-bookmarks-ui)
-
-```
-
-## Installation
-
-Clone and move the repo to the local ql projects dir
+You only need sbcl:
 
 ``` shell
-$ git clone git@github.com:goosecoid/ptp-bookmarks-ui.git
-$ mv ptp-bookmarks-ui ~/quicklisp/local-projects/ptp-bookmarks-ui
+# Darwin
+$ brew install sbcl
+
+# Linux (install with your package manager of choice)
+$ sudo apt install sbcl
 ```
+
+### Build & run
+
+``` shell
+$ make build
+$ ./ptp --port 8888 --file ~/Downloads/bookmarks.csv
+
+...
+Hunchentoot server is started.
+Listening on 127.0.0.1:8888.
+```
+
+## Screenshot
+
+![screenshot](public/screenshot.png)
 
