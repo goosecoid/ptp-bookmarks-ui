@@ -4,7 +4,6 @@
 (defparameter *omdb-api-key* "2f4be310")
 (defparameter *omdb-request-root*
   (str:concat "http://www.omdbapi.com/?apikey=" *omdb-api-key*))
-(defparameter *watch-list-path* #P"~/Downloads/bookmarks.csv")
 
 (defun assoc-val (alist key)
   (alexandria:assoc-value alist key :test #'equal))
@@ -37,7 +36,7 @@
 
   (mito:ensure-table-exists 'movie)
   (mito:migrate-table 'movie)
-  (populate-db-from-csv *watch-list-path*))
+  (populate-db-from-csv *csv-file-path*))
 
 ;; TODO: make it accept on or more alists
 ;; and use loop macro with destructuring and skip
@@ -55,7 +54,8 @@
    :title (assoc-val movie-alist "Title")))
 
 (defun populate-db-from-csv (csv-file-path)
-  (let ((csv (cl-csv:read-csv csv-file-path)))
+  (let ((csv (cl-csv:read-csv (pathname csv-file-path))))
+    (format t "CSV ~A~%" csv)
     (loop for (title year imdb-link) in (rest csv)
           for imdb-id = (get-imdb-id imdb-link)
           do (format

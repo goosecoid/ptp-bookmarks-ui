@@ -1,7 +1,8 @@
 (in-package :ptp-bookmarks-ui)
 
+(defvar *port*)
+(defvar *csv-file-path*)
 (defparameter *app* (make-instance 'ningle:app))
-(defparameter *port* 8080)
 
 (defun bootstrap-routes (app-instance)
 
@@ -23,16 +24,56 @@
               (:div :id "trailer-urls"
                     (:raw (get-trailer-links-el (cdar params))))))))
 
+(defun start/options ()
+  "Returns the options of the `start' command"
+  (list
+   (clingon:make-option
+    :string
+    :description "File path to csv file"
+    :short-name #\f
+    :long-name "file"
+    :initial-value nil
+    :env-vars '("FILE")
+    :key :file)
+   (clingon:make-option
+    :integer
+    :description "HTTP server port"
+    :short-name #\p
+    :long-name "port"
+    :initial-value 8080
+    :env-vars '("PORT")
+    :key :port)))
+
+(defun start/handler (cmd)
+  "Handler for the `start' command"
+  (let ((p (clingon:getopt cmd :port))
+        (f (clingon:getopt cmd :file)))
+    (format t "Loading csv from ~a~%" f)
+    (setq *port* p)
+    (when f
+      (setq *csv-file-path* f))))
+
+(defun start/command ()
+  "A command to start the web interface"
+  (clingon:make-command
+   :name "start"
+   :description "Start the web interface"
+   :options (start/options)
+   :handler #'start/handler))
+
 (defun start ()
-  (bootstrap-db)
-  (bootstrap-routes *app*)
-  (let ((server (clack:clackup
-                 (lack:builder
-                  (:static
-                   :path "/public/"
-                   :root (asdf:system-relative-pathname :ptp-bookmarks-ui #P"public/"))
-                  *app*)
-                 :port 8080)))
+  (let ((app (start/command)))
+    (clingon:run app)
+    (bootstrap-db)
+    (bootstrap-routes *app*)
+    (let ((server (clack:clackup
+                   (lack:builder
+                    (:static
+                     :path "/public/"
+                     :root (asdf:system-relative-pathname :ptp-bookmarks-ui #P"public/"))
+                    *app*)
+                   :port *port*)))
+      app*)
 
     (handler-case (bt:join-thread
                    (find-if (lambda (th)
@@ -45,4 +86,5 @@
           (format *error-output* "Aborting server...~&")
           (clack:stop server)
           (uiop:quit)))
-    (error (c) (format t "Unknown error: ~&~a~&" c))))
+    (error (c) (format t "Unknown error: ~&~a~&" c)))
+  )

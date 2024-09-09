@@ -1,7 +1,7 @@
 (defsystem "ptp-bookmarks-ui"
   :version "0.0.1"
-  :author ""
-  :license ""
+  :author "goosecoid"
+  :license "MIT"
   :depends-on ("cl-csv"
                "dexador"
                "str"
@@ -12,6 +12,7 @@
                "spinneret"
                "clack"
                "ningle"
+               "clingon"
                "bordeaux-threads"
                "lack")
   :components ((:module "src"
@@ -21,9 +22,8 @@
                  (:file "db")
                  (:file "view")
                  (:file "server")
-                 (:file "imdb")
-                 (:file "cli"))))
-  :description ""
+                 (:file "imdb"))))
+  :description "A PassThePopcorn bookmarks UI"
   :build-operation "program-op"
   :build-pathname "ptp"
   :entry-point "ptp-bookmarks-ui:start")
