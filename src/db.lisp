@@ -34,7 +34,6 @@
 
 (defun populate-db-from-csv (csv-file-path)
   (let ((csv (cl-csv:read-csv (pathname csv-file-path))))
-    (format t "CSV ~A~%" csv)
     (loop for (title year imdb-link) in (rest csv)
           for imdb-id = (get-imdb-id imdb-link)
           do (format
@@ -59,7 +58,7 @@
                   title
                   year)))))
 
-(defun list-all-movies-as-plist (&key (key :title) (order :desc))
+(defun list-all-movies-as-plist (&key (key :year) (order :desc))
   "Return all movies in db. :KEY to sort can be :TITLE or :RATING. :ORDER can be :ASC or DESC"
   (let ((db-list (mito:select-dao 'movie))
         (predicate (if (eq order :desc) #'string-greaterp #'string-lessp)))

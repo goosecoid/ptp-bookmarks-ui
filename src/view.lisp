@@ -100,5 +100,6 @@
     (:div :id "table-head-title"
           (:p title)
           (when (or (string-equal title "Year")
-                    (string-equal title "Rating"))
+                    (string-equal title "Rating")
+                    (string-equal title "Title"))
             (:img :id "sort-icon" :src "public/sort.svg" :width "10px")))))
