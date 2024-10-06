@@ -3,6 +3,7 @@
   :author "goosecoid"
   :license "MIT"
   :depends-on ("cl-csv"
+               "binding-arrows"
                "dexador"
                "str"
                "jonathan"

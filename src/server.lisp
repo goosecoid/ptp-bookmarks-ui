@@ -4,6 +4,8 @@
 (defvar *csv-file-path*)
 (defparameter *app* (make-instance 'ningle:app))
 (defvar *server* nil)
+(defvar *omdb-api-key* nil)
+(defvar *omdb-request-root* nil)
 
 (defun bootstrap-routes (app-instance)
 
@@ -24,6 +26,20 @@
             (spinneret:with-html-string ()
               (:div :id "trailer-urls"
                     (:raw (get-trailer-links-el (cdar params))))))))
+
+(defun read-env-file ()
+  (->> ".env"
+    (pathname)
+    (asdf:system-relative-pathname :ptp-bookmarks-ui)
+    (uiop:read-file-lines)
+    (remove-if-not (lambda (str) (str:containsp "OMDB_KEY=" str)))
+    (first)
+    (str:split "=")
+    (cadr)
+    (remove #\')
+    (setq *omdb-api-key*)
+    (str:concat "http://www.omdbapi.com/?apikey=")
+    (setq *omdb-request-root*)))
 
 (defun start/options ()
   "Returns the options of the `start' command"
@@ -65,6 +81,7 @@
 (defun start ()
   (let ((app (start/command)))
     (clingon:run app)
+    (read-env-file)
     (bootstrap-db)
     (bootstrap-routes *app*)
     (setf *server* (clack:clackup

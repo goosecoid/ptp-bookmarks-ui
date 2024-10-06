@@ -1,20 +1,5 @@
 (in-package :ptp-bookmarks-ui)
 
-;; TODO: FIXME env var
-(defparameter *omdb-api-key* "2f4be310")
-(defparameter *omdb-request-root*
-  (str:concat "http://www.omdbapi.com/?apikey=" *omdb-api-key*))
-
-(defun assoc-val (alist key)
-  (alexandria:assoc-value alist key :test #'equal))
-
-(defun get-imdb-id (imdb-link)
-  (car
-   (last
-    (remove-if
-     #'str:emptyp
-     (str:split #\/ imdb-link)))))
-
 (defun bootstrap-db ()
 
   (mito:connect-toplevel

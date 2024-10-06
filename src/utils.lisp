@@ -17,3 +17,13 @@
              (lambda (movie) (str:containsp genre (getf movie :genre)))
              lst)))
       genre-lst)))
+
+(defun assoc-val (alist key)
+  (alexandria:assoc-value alist key :test #'equal))
+
+(defun get-imdb-id (imdb-link)
+  (car
+   (last
+    (remove-if
+     #'str:emptyp
+     (str:split #\/ imdb-link)))))

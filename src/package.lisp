@@ -1,3 +1,3 @@
 (defpackage ptp-bookmarks-ui
-  (:use :cl :alexandria)
+  (:use :cl :alexandria :binding-arrows)
   (:export #:start))

@@ -11,3 +11,4 @@
 *.html
 .DS_Store
 ptp
+.env
