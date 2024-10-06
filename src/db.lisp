@@ -15,9 +15,6 @@
      #'str:emptyp
      (str:split #\/ imdb-link)))))
 
-;;TODO: FIXME Should create a single bootstrap function for the DB
-;;That will create the tables, migrations and init a re-usable connection
-
 (defun bootstrap-db ()
 
   (mito:connect-toplevel
@@ -38,9 +35,6 @@
   (mito:migrate-table 'movie)
   (populate-db-from-csv *csv-file-path*))
 
-;; TODO: make it accept on or more alists
-;; and use loop macro with destructuring and skip
-;; for enhanced brevity
 (defun create-movie-item (movie-alist)
   (make-instance
    'movie
@@ -80,17 +74,22 @@
                   title
                   year)))))
 
-(defun list-all-movies-as-plist ()
-  (let ((db-list (mito:select-dao 'movie)))
-    (loop for db-item in db-list
-          collect (with-slots
-                        (title year imdbrating poster plot actors genre imdbid)
-                      db-item
-                    `(:title ,title
-                      :imdbid ,imdbid,
-                      :year ,year
-                      :rating ,imdbrating
-                      :poster ,poster
-                      :synopsis ,plot
-                      :actors ,actors
-                      :genre ,genre)))))
+(defun list-all-movies-as-plist (&key (key :title) (order :desc))
+  "Return all movies in db. :KEY to sort can be :TITLE or :RATING. :ORDER can be :ASC or DESC"
+  (let ((db-list (mito:select-dao 'movie))
+        (predicate (if (eq order :desc) #'string-greaterp #'string-lessp)))
+    (sort (loop for db-item in db-list
+                collect (with-slots
+                              (title year imdbrating poster plot actors genre imdbid)
+                            db-item
+                          `(:title ,title
+                            :imdbid ,imdbid,
+                            :year ,year
+                            :rating ,imdbrating
+                            :poster ,poster
+                            :synopsis ,plot
+                            :actors ,actors
+                            :genre ,genre)))
+          predicate
+          :key (lambda (plist)
+                 (getf plist key)))))
