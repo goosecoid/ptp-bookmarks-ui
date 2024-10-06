@@ -2,7 +2,7 @@
 
 ;; TODO: FIXME we should store the trailer urls in the db
 (defun get-trailer-links (imdbid)
-  "returns a list of lists, each containing a link to a trailer and its description"
+  "returns '((trailer-link1 description1) ...) "
   (format t "Getting trailer links for ~a~%" imdbid)
   (format t "Fecthing html from ~a~%" (format nil "https://www.imdb.com/title/~a/" imdbid))
   (let* ((html (dex:get (format nil "https://www.imdb.com/title/~a/" imdbid)))

@@ -1,46 +1,25 @@
 (in-package :ptp-bookmarks-ui)
 
-(defun extract-genres (movies-plist)
-  (sort
-   (remove-duplicates
-    (loop for movie in movies-plist
-          for genres = (str:split "," (getf movie :genre))
-          nconc (loop for genre in genres
-                      collect (str:trim genre)))
-    :test #'equal)
-   #'string-lessp))
-
-(defun filter-movies (lst &key (genre nil))
-  (when genre
-    (let ((genre-lst
-            (remove-if-not
-             (lambda (movie) (str:containsp genre (getf movie :genre)))
-             lst)))
-      genre-lst)))
+(defparameter *table-titles* '("Title"
+                               "Cover"
+                               "Year"
+                               "Genre"
+                               "Actors"
+                               "Synopsis"
+                               "Rating"
+                               "Trailers"))
 
 (defmacro with-page ((&key title) &body body)
   `(spinneret:with-html-string
-       (:doctype)
+     (:doctype)
      (:html
       (:head
-       (:style "#trailer-button { display: flex;
-                                  flex-flow: row nowrap;
-                                  justify-content: space-between;
-                                  align-items: center;
-                                  gap: 10px; }
-                #trailer-urls { display: flex;
-                                flex-flow: column wrap;
-                                justify-content: center; }
-                .container { margin: 1% }
-                .dropdown { display: flex;
-                            flex-flow: row nowrap;
-                            justify-content: flex-start;
-                            align-items: center;
-                            gap: 10px; }
-                #title { text-align: center  }")
        (:link
         :rel "stylesheet"
         :href "public/pure-min.css")
+       (:link
+        :rel "stylesheet"
+        :href "public/main.css")
        (:script :src "public/htmx.min.js")
        (:title ,title))
       (:body ,@body))))
@@ -49,35 +28,34 @@
   (spinneret:with-html-string ()
     (loop for movie in movies-plist
           for counter from 1 do
-            (:tr :class (if (oddp counter)
-                            "pure-table-odd"
-                            "pure-table-even")
-                 (:td (getf movie :title))
-                 (:td (:img :class "pure-img" :src (getf movie :poster)))
-                 (:td (getf movie :year))
-                 (:td (getf movie :genre))
-                 (:td (getf movie :actors))
-                 (:td (getf movie :synopsis))
-                 (:td (getf movie :rating))
-                 (:td
-                  ;; TODO: in the future whe should check if the movie has trailer urls
-                  ;; if so, already render them, otherwise, render the fetch button
-                  ;; TODO: button kinda looks weird
-                  (:div
-                   :id "trailer-button"
-                   :class "pure-button"
-                   :data-hx-trigger "click"
-                   :data-hx-swap "outerHTML"
-                   :data-hx-get
-                   (format
-                    nil
-                    "/trailers?imdbid=~A"
-                    (getf movie :imdbid))
-                   (:span "Get trailers")
-                   (:img
-                    :id "spinner"
-                    :class "htmx-indicator"
-                    :src "public/spinner.svg")))))))
+            (:tr  :class (if (oddp counter)
+                             "pure-table-odd"
+                             "pure-table-even")
+                  (:td (getf movie :title))
+                  (:td
+                   (:img :class "pure-img" :src (getf movie :poster)))
+                  (:td (getf movie :year))
+                  (:td (getf movie :genre))
+                  (:td (getf movie :actors))
+                  (:td (getf movie :synopsis))
+                  (:td (getf movie :rating))
+                  (:td
+                   :id "trailer-grid-box"
+                   (:div
+                    :id "trailer-button"
+                    :class "pure-button"
+                    :data-hx-trigger "click"
+                    :data-hx-swap "outerHTML"
+                    :data-hx-get
+                    (format
+                     nil
+                     "/trailers?imdbid=~A"
+                     (getf movie :imdbid))
+                    (:span "Get trailers")
+                    (:img
+                     :id "spinner"
+                     :class "htmx-indicator"
+                     :src "public/spinner.svg")))))))
 
 
 
@@ -89,17 +67,17 @@
 
 (defun genre-dropdown-filter (genres)
   (spinneret:with-html-string ()
-    (:div :class "dropdown"
+    (:div :id "dropdown"
           (:p "Filter by genre: ")
           (:form :class "pure-form"
                  (:select
-                  :name "genre"
-                  :data-hx-get
-                  "/filter-genre"
-                  :data-hx-trigger "change"
-                  :data-hx-target "#table-body"
-                  (loop for genre in genres
-                        do (:option :id "genre" :value genre genre)))))))
+                     :name "genre"
+                   :data-hx-get
+                   "/filter-genre"
+                   :data-hx-trigger "change"
+                   :data-hx-target "#table-body"
+                   (loop for genre in genres
+                         do (:option :id "genre" :value genre genre)))))))
 
 (defun movie-list (movies-plist)
   (with-page (:title "My PTP watch list")
@@ -111,13 +89,15 @@
           (:table :class "pure-table"
                   (:thead
                    (:tr
-                    (:th "Title")
-                    (:th "Cover")
-                    (:th "Year")
-                    (:th "Genre")
-                    (:th "Actors")
-                    (:th "Synopsis")
-                    (:th "Rating")
-                    (:th "Trailers")))
+                    (loop for title in *table-titles*
+                          do (:th (:raw (t-header-item title))))))
                   (:tbody :id "table-body"
                           (:raw (table-body movies-plist)))))))
+
+(defun t-header-item (title)
+  (spinneret:with-html-string ()
+    (:div :id "table-head-title"
+          (:p title)
+          (when (or (string-equal title "Year")
+                    (string-equal title "Rating"))
+            (:img :id "sort-icon" :src "public/sort.svg" :width "10px")))))

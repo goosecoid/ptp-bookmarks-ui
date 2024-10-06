@@ -18,6 +18,7 @@
   :components ((:module "src"
                 :components
                 ((:file "package")
+                 (:file "utils")
                  (:file "omdb")
                  (:file "db")
                  (:file "view")

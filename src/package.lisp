@@ -1,3 +1,3 @@
 (defpackage ptp-bookmarks-ui
-  (:use :cl)
+  (:use :cl :alexandria)
   (:export #:start))

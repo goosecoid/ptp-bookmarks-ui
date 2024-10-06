@@ -3,6 +3,7 @@
 (defvar *port*)
 (defvar *csv-file-path*)
 (defparameter *app* (make-instance 'ningle:app))
+(defvar *server* nil)
 
 (defun bootstrap-routes (app-instance)
 
@@ -32,7 +33,7 @@
     :description "File path to csv file"
     :short-name #\f
     :long-name "file"
-    :initial-value nil
+    :initial-value "~/Downloads/bookmarks.csv"
     :env-vars '("FILE")
     :key :file)
    (clingon:make-option
@@ -66,14 +67,13 @@
     (clingon:run app)
     (bootstrap-db)
     (bootstrap-routes *app*)
-    (let ((server (clack:clackup
-                   (lack:builder
-                    (:static
-                     :path "/public/"
-                     :root (asdf:system-relative-pathname :ptp-bookmarks-ui #P"public/"))
-                    *app*)
-                   :port *port*)))
-      app*)
+    (setf *server* (clack:clackup
+                    (lack:builder
+                     (:static
+                      :path "/public/"
+                      :root (asdf:system-relative-pathname :ptp-bookmarks-ui #P"public/"))
+                     *app*)
+                    :port *port*))
 
     (handler-case (bt:join-thread
                    (find-if (lambda (th)
@@ -82,9 +82,15 @@
 
     ;; Catch a C-c
     (#+sbcl sb-sys:interactive-interrupt
-     () (progn
-          (format *error-output* "Aborting server...~&")
-          (clack:stop server)
-          (uiop:quit)))
-    (error (c) (format t "Unknown error: ~&~a~&" c)))
-  )
+     () (stop))
+    (error (c) (format t "Unknown error: ~&~a~&" c))))
+
+(defun stop ()
+  (progn
+    (format *error-output* "Aborting server...~&")
+    (clack:stop *server*)
+    (uiop:quit)))
+
+;; (ql:quickload :ptp-bookmarks-ui)
+;; (start)
+;; (stop)
