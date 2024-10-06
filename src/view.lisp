@@ -24,7 +24,22 @@
        (:title ,title))
       (:body ,@body))))
 
-(defun table-body (movies-plist)
+(defun movie-list (movies-plist)
+  (with-page (:title "My PTP watch list")
+    (:header
+     (:h1 :id "title" "My PTP watch list"))
+    (:div :class "container"
+          (:div (:raw (genre-dropdown-filter
+                       (extract-genres movies-plist))))
+          (:table :class "pure-table"
+                  (:thead
+                   (:tr
+                    (loop for title in *table-titles*
+                          do (:th (:raw (t-header-item title))))))
+                  (:tbody :id "table-body"
+                          (:raw (movie-list-body movies-plist)))))))
+
+(defun movie-list-body (movies-plist)
   (spinneret:with-html-string ()
     (loop for movie in movies-plist
           for counter from 1 do
@@ -79,20 +94,6 @@
                    (loop for genre in genres
                          do (:option :id "genre" :value genre genre)))))))
 
-(defun movie-list (movies-plist)
-  (with-page (:title "My PTP watch list")
-    (:header
-     (:h1 :id "title" "My PTP watch list"))
-    (:div :class "container"
-          (:div (:raw (genre-dropdown-filter
-                       (extract-genres movies-plist))))
-          (:table :class "pure-table"
-                  (:thead
-                   (:tr
-                    (loop for title in *table-titles*
-                          do (:th (:raw (t-header-item title))))))
-                  (:tbody :id "table-body"
-                          (:raw (table-body movies-plist)))))))
 
 (defun t-header-item (title)
   (spinneret:with-html-string ()
