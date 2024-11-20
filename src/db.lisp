@@ -8,12 +8,12 @@
 
   (mito:deftable movie ()
     ((imdbid :col-type :text)
-     (imdbrating :col-type :text)
+     (imdbrating :col-type :double)
      (poster :col-type :text)
      (plot :col-type :text)
      (actors :col-type :text)
      (genre :col-type :text)
-     (year :col-type :text)
+     (year :col-type :integer)
      (title :col-type :text)))
 
   (mito:ensure-table-exists 'movie)
@@ -58,7 +58,7 @@
                   title
                   year)))))
 
-(defmacro list-all-movies-as-plist (&key (key :rating) (order :asc))
+(defmacro list-all-movies-as-plist (&key (key :imdbrating) (order :desc))
   "Return all movies in db. :KEY to sort can be :TITLE, :YEAR or :RATING.
    :ORDER can be :ASC or DESC"
     `(loop for db-item in (mito:select-dao 'movie

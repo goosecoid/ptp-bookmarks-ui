@@ -108,7 +108,10 @@
              :data-hx-trigger "click"
              :data-hx-target "#table-body"
              :data-hx-get
-             (let ((keyword-title (keywordize-string title)))
+             (let ((keyword-title (keywordize-string
+                                   (if (eq title "Rating")
+                                       "imdbrating"
+                                       title))))
                (if (and *table-state*
                         (eq (car *table-state*) keyword-title)
                         (eq (cdr *table-state*) :desc))
