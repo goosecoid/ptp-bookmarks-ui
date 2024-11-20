@@ -58,22 +58,10 @@
                   title
                   year)))))
 
-(defun list-all-movies-as-plist (&key (key :year) (order :desc))
-  "Return all movies in db. :KEY to sort can be :TITLE or :RATING. :ORDER can be :ASC or DESC"
-  (let ((db-list (mito:select-dao 'movie))
-        (predicate (if (eq order :desc) #'string-greaterp #'string-lessp)))
-    (sort (loop for db-item in db-list
-                collect (with-slots
-                              (title year imdbrating poster plot actors genre imdbid)
-                            db-item
-                          `(:title ,title
-                            :imdbid ,imdbid,
-                            :year ,year
-                            :rating ,imdbrating
-                            :poster ,poster
-                            :synopsis ,plot
-                            :actors ,actors
-                            :genre ,genre)))
-          predicate
-          :key (lambda (plist)
-                 (getf plist key)))))
+(defmacro list-all-movies-as-plist (&key (key :rating) (order :asc))
+  "Return all movies in db. :KEY to sort can be :TITLE, :YEAR or :RATING.
+   :ORDER can be :ASC or DESC"
+    `(loop for db-item in (mito:select-dao 'movie
+                            (sxql:order-by
+                             (mapcar #'keywordize-string (list ,order ,key))))
+              collect (map-movie-obj-to-plist db-item)))

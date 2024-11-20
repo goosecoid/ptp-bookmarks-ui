@@ -27,3 +27,39 @@
     (remove-if
      #'str:emptyp
      (str:split #\/ imdb-link)))))
+
+(defun keywordize-string (str)
+  (-<> str (string-upcase <>) (intern :keyword)))
+
+(defun read-env-file ()
+  (->> ".env"
+    (pathname)
+    (asdf:system-relative-pathname :ptp-bookmarks-ui)
+    (uiop:read-file-lines)
+    (remove-if-not (lambda (str) (str:containsp "OMDB_KEY=" str)))
+    (first)
+    (str:split "=")
+    (cadr)
+    (remove #\')
+    (setq *omdb-api-key*)
+    (str:concat "http://www.omdbapi.com/?apikey=")
+    (setq *omdb-request-root*)))
+
+(defun map-movie-obj-to-plist (db-item)
+  (with-slots
+        (title year imdbrating poster plot actors genre imdbid)
+      db-item
+    `(:title ,title
+      :imdbid ,imdbid,
+      :year ,year
+      :rating ,imdbrating
+      :poster ,poster
+      :synopsis ,plot
+      :actors ,actors
+      :genre ,genre)))
+
+(defun sanitize-year (str)
+  (str:remove-punctuation str))
+
+(defun sanitize-rating (str)
+  (str:replace-all "N/A" "0" str))

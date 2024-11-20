@@ -2,7 +2,7 @@
 
 ;; TODO: we should store the trailer urls in the db
 (defun get-trailer-links (imdbid)
-  "returns '((trailer-link1 description1) ...) "
+  "Fetches trailer links from imdb, returns '((trailer-link1 description1) ...)"
   (format t "Getting trailer links for ~a~%" imdbid)
   (format t "Fetching html from ~a~%" (format nil "https://www.imdb.com/title/~a/" imdbid))
   (let* ((html (dex:get (format nil "https://www.imdb.com/title/~a/" imdbid)))

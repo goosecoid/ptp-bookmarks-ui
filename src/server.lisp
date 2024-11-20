@@ -12,6 +12,16 @@
   (setf (ningle:route app-instance "/")
         (movie-list (list-all-movies-as-plist)))
 
+  (setf (ningle:route app-instance "/sort-table")
+        #'(lambda (params)
+            (let ((k (cdar params))
+                  (ord (cdadr params)))
+              (spinneret:with-html-string ()
+                (:raw (movie-list-body
+                       (list-all-movies-as-plist
+                        :key k
+                        :order ord)))))))
+
   (setf (ningle:route app-instance "/filter-genre")
         #'(lambda (params)
             (let ((movielst
@@ -19,27 +29,13 @@
                      (list-all-movies-as-plist)
                      :genre (cdar params))))
               (spinneret:with-html-string ()
-                (:raw (table-body movielst))))))
+                (:raw (movie-list-body movielst))))))
 
   (setf (ningle:route app-instance "/trailers")
         #'(lambda (params)
             (spinneret:with-html-string ()
               (:div :id "trailer-urls"
                     (:raw (get-trailer-links-el (cdar params))))))))
-
-(defun read-env-file ()
-  (->> ".env"
-    (pathname)
-    (asdf:system-relative-pathname :ptp-bookmarks-ui)
-    (uiop:read-file-lines)
-    (remove-if-not (lambda (str) (str:containsp "OMDB_KEY=" str)))
-    (first)
-    (str:split "=")
-    (cadr)
-    (remove #\')
-    (setq *omdb-api-key*)
-    (str:concat "http://www.omdbapi.com/?apikey=")
-    (setq *omdb-request-root*)))
 
 (defun start/options ()
   "Returns the options of the `start' command"
@@ -84,18 +80,22 @@
     (read-env-file)
     (bootstrap-db)
     (bootstrap-routes *app*)
-    (setf *server* (clack:clackup
-                    (lack:builder
-                     (:static
-                      :path "/public/"
-                      :root (asdf:system-relative-pathname :ptp-bookmarks-ui #P"public/"))
-                     *app*)
-                    :port *port*))
+    (setf
+     *server*
+     (clack:clackup
+      (lack:builder
+       (:static
+        :path "/public/"
+        :root (asdf:system-relative-pathname :ptp-bookmarks-ui #P"public/"))
+       *app*)
+      :port *port*))
 
-    (handler-case (bt:join-thread
-                   (find-if (lambda (th)
-                              (search "hunchentoot" (bt:thread-name th)))
-                            (bt:all-threads))))
+    (handler-case
+        (bt:join-thread
+         (find-if
+          (lambda (th)
+            (search "hunchentoot" (bt:thread-name th)))
+          (bt:all-threads))))
 
     ;; Catch a C-c
     (#+sbcl sb-sys:interactive-interrupt
